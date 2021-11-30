@@ -4,10 +4,9 @@ body {
 
 canvas {
   background-color: #222020;
-  height: 85vh;
-  width: 75vw;
+
   padding: 1rem;
-  margin: 2rem auto;
+  margin: 5rem auto;
   border: solid 1px #3a1b1b;
   display: flex;
   align-items: center;

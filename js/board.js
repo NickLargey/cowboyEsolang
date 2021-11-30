@@ -1,7 +1,8 @@
 window.addEventListener("DOMContentLoaded", (event) => {
   const canvas = document.getElementById("c");
   const context = canvas.getContext("2d");
-
+  canvas.width = window.innerWidth * 0.85;
+  canvas.height = window.innerHeight * 0.75;
   let keysPressed = {};
 
   document.addEventListener("keydown", (event) => {
@@ -9,7 +10,8 @@ window.addEventListener("DOMContentLoaded", (event) => {
   });
 
   document.addEventListener("keyup", (event) => {
-    delete keysPressed[event.key];
+    // delete keysPressed[event.key];
+    keysPressed = {};
   });
 
   class Rectangle {
@@ -23,7 +25,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
       this.ymom = 0;
     }
     draw() {
-      context.lineWidth = 0.5;
+      context.lineWidth = 1;
       context.fillStyle = this.color;
       context.strokeStyle = "black";
       context.fillRect(this.x, this.y, this.width, this.height);
@@ -67,7 +69,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
       this.x = 0;
       this.y = 0;
       this.blocks = [];
-      this.glyph = new Glyph();
       for (let q = 0; this.y < canvas.height; q++) {
         for (let q = 0; this.x < canvas.width; q++) {
           let block;
@@ -85,27 +86,6 @@ window.addEventListener("DOMContentLoaded", (event) => {
     draw() {
       for (let b = 0; b < this.blocks.length; b++) {
         this.blocks[b].draw();
-      }
-    }
-  }
-
-  class Glyph {
-    constructor() {
-      this.glyphLoc = {};
-    }
-
-    draw() {
-      this.control();
-      for(let glyph in this.glyphLoc){
-        glyph.draw();
-      }
-    }
-    control() {
-      if (keysPressed["="]) {
-        glyphLoc[(this.body.x, this.body.y)] = "=";
-        context.font = "5px serif";
-        context.fillText("=", this.body.x, this.body.y);
-        for (let glyph in glyphLoc) console.log(glyph); // debug
       }
     }
   }
@@ -128,17 +108,18 @@ window.addEventListener("DOMContentLoaded", (event) => {
       this.body.y = this.location.y + this.location.height / 2;
       this.body.draw();
     }
+
     control() {
-      if (keysPressed["w"]) {
+      if (keysPressed["w"] || keysPressed["W"]) {
         this.body.y -= this.grid.height;
       }
-      if (keysPressed["a"]) {
+      if (keysPressed["a"] || keysPressed["A"]) {
         this.body.x -= this.grid.width;
       }
-      if (keysPressed["s"]) {
+      if (keysPressed["s"] || keysPressed["S"]) {
         this.body.y += this.grid.height;
       }
-      if (keysPressed["d"]) {
+      if (keysPressed["d"] || keysPressed["D"]) {
         this.body.x += this.grid.width;
       }
 
@@ -164,10 +145,80 @@ window.addEventListener("DOMContentLoaded", (event) => {
     }
   }
 
-  let board = new Grid(5, 5, "#222020");
+  class Glyph {
+    constructor(x, y, character) {
+      (this.x = x), (this.y = y), (this.character = character);
+    }
+  }
+
+  class GlyphHistory {
+    constructor(cursor) {
+      this.cursor = cursor;
+      this.glyphLoc = new Array();
+    }
+    draw() {
+      this.control();
+      console.log(this.glyphLoc.length);
+      if (this.glyphLoc.length > 0) {
+        for (let i = 0; i < this.glyphLoc.length; i++) {
+          context.font = "12px aerial";
+          context.fillText(
+            this.glyphLoc[i].character,
+            this.glyphLoc[i].x - 3,
+            this.glyphLoc[i].y + 2
+          );
+        }
+      }
+    }
+    control() {
+      if (keysPressed["="]) {
+        this.glyphLoc.push(
+          new Glyph(this.cursor.body.x, this.cursor.body.y, "=")
+        );
+      }
+
+      if (keysPressed["]"]) {
+        this.glyphLoc.push(
+          new Glyph(this.cursor.body.x, this.cursor.body.y, "]")
+        );
+      }
+
+      if (keysPressed["["]) {
+        this.glyphLoc.push(
+          new Glyph(this.cursor.body.x, this.cursor.body.y, "[")
+        );
+      }
+
+      if (keysPressed["v"]) {
+        this.glyphLoc.push(
+          new Glyph(this.cursor.body.x, this.cursor.body.y, "v")
+        );
+      }
+      if (keysPressed["^"]) {
+        this.glyphLoc.push(
+          new Glyph(this.cursor.body.x, this.cursor.body.y, "^")
+        );
+      }
+      if (keysPressed[">"]) {
+        this.glyphLoc.push(
+          new Glyph(this.cursor.body.x, this.cursor.body.y, ">")
+        );
+      }
+      if (keysPressed["<"]) {
+        this.glyphLoc.push(
+          new Glyph(this.cursor.body.x, this.cursor.body.y, "<")
+        );
+      }
+    }
+  }
+
+  let board = new Grid(15, 15, "#222020");
   let cursor = new Cursor(board, "pink");
+  let glyphs = new GlyphHistory(cursor);
+
   window.setInterval(function () {
     board.draw();
     cursor.draw();
+    glyphs.draw();
   }, 120);
 });
